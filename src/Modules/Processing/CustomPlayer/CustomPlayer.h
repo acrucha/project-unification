@@ -31,6 +31,8 @@ class CustomPlayer : public Processing {
   std::optional<Frame> frame;
   std::optional<Robot> robot;
 
+  bool map;
+
   SSLNavigation sslNavigation;
   VSSNavigation vssNavigation;
 

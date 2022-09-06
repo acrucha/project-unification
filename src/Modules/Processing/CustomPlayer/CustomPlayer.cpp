@@ -1,4 +1,5 @@
 #include "CustomPlayer.h"
+#include "Graph/Graph.h"
 
 CustomPlayer::CustomPlayer(int index, QThreadPool* threadPool) : Processing(index, threadPool) {
 }
@@ -21,6 +22,7 @@ void CustomPlayer::connectModules(const Modules* modules) {
 }
 
 void CustomPlayer::init(const Modules* modules) {
+  this->map = false;
 }
 
 void CustomPlayer::update() {
@@ -36,6 +38,15 @@ void CustomPlayer::update() {
 void CustomPlayer::exec() {
   if (!field || !frame || !robot) {
     return;
+  }
+
+  // qInfo() << "to pegando ein!" << Qt::endl;
+  if (!this->map) {
+    Graph g = Graph();
+
+    QList<QPointF> q =
+        g.generateBestPath(frame->enemies(), robot->position(), frame->ball().position());
+    this->map = true;
   }
 
   // TODO: here...
