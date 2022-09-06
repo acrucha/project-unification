@@ -12,6 +12,7 @@ class Graph {
  private:
   [[nodiscard]] std::vector<int> defineBoundaries(const QPointF& point) const;
   void mapObstacles(const Robots<Robot>& enemies);
+  void createNodes(const QPointF& origin, const QPointF& target);
   void createGraph(const QPointF& origin, const QPointF& target);
 
   QHash<QPoint, bool> obstacles;

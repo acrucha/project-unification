@@ -16,7 +16,32 @@ void Graph::mapObstacles(const Robots<Robot>& enemies) {
   }
 }
 
+void Graph::createNodes(const QPointF& origin, const QPointF& target) {
+  int difX = qCeil(qFabs(origin.x() - target.x())) - 10;
+
+  qInfo() << "DifX = " << difX << Qt::endl;
+
+  QPoint node(qCeil(origin.x()), qCeil(origin.y()));
+  int ix = node.x();
+  int interval = difX / 3;
+  while (difX > 0) {
+    for (int iy = -60; iy <= 60; iy += 30) {
+      node.ry() = iy;
+      if (!obstacles.contains(node)) {
+        graph[node] = QList<QPoint>();
+      }
+    }
+    ix += interval;
+    node.rx() = ix;
+    difX -= interval;
+  }
+}
+
 void Graph::createGraph(const QPointF& origin, const QPointF& target) {
+
+  createNodes(origin, target);
+
+  qInfo() << "graph:" << graph << Qt::endl;
 }
 
 std::vector<int> Graph::defineBoundaries(const QPointF& point) const {
@@ -36,5 +61,6 @@ QList<QPointF> Graph::generateBestPath(const Robots<Robot>& enemies,
 
   QList<QPointF> list;
   mapObstacles(enemies);
+  createGraph(origin, target);
   return list;
 }
