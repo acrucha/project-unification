@@ -8,12 +8,10 @@ void Graph::mapObstacles(const Robots<Robot>& enemies) {
     QPointF p = e.position();
     std::vector<int> v = defineBoundaries(p);
     QRect area(v[0], v[1], OBSTACLE_BOUNDARIES * 2, OBSTACLE_BOUNDARIES * 2);
-    qInfo() << "inimigo => " << p << " - area => " << area << Qt::endl;
     this->obstaclesArea.append(area);
     for (int i = v[0]; i < v[2]; i++) {
       for (int j = v[1]; j > v[3]; j--) {
         QPoint point(i, j);
-        // qInfo() << point << Qt::endl;
         this->obstacles[point] = true;
       }
     }
@@ -21,15 +19,13 @@ void Graph::mapObstacles(const Robots<Robot>& enemies) {
 }
 
 void Graph::createNodes(const QPointF& origin, const QPointF& target) {
-  int difX = qCeil(qFabs(origin.x() - target.x())) - 10;
-
-  qInfo() << "DifX = " << difX << Qt::endl;
+  int difX = qCeil(qFabs(origin.x() - target.x())) - TARGET_MARGIN;
 
   QPoint node(qCeil(origin.x()), qCeil(origin.y()));
   int ix = node.x();
-  int interval = difX / 3;
-  while (difX > 0) {
-    for (int iy = -60; iy <= 60; iy += 30) {
+  int interval = difX / (INTERVAL_NUMBER - 1);
+  while (difX > 0 && ix <= X_MAX) {
+    for (int iy = -Y_MAX; iy <= Y_MAX; iy += Y_MAX / 2) {
       node.ry() = iy;
       if (!obstacles.contains(node)) {
         graph[node] = QList<QPoint>();
@@ -41,7 +37,7 @@ void Graph::createNodes(const QPointF& origin, const QPointF& target) {
   }
 }
 
-double Graph::dist(QPoint node, QPoint other) {
+double Graph::distance(QPoint node, QPoint other) {
   return qSqrt(qPow(other.x() - node.x(), 2) + qPow(other.y() - node.y(), 2));
 }
 
@@ -60,21 +56,15 @@ QPolygon Graph::createArea(QPoint node, QPoint other) {
   QPolygon polygon;
   if (node.x() < other.x()) {   // nodes on right side
     if (node.y() < other.y()) { // diagonal top -> flag = 1
-      qInfo() << "DIAGONAL TOP" << Qt::endl;
       return diagonalPolygon(node, other, 1);
     } else if (node.y() > other.y()) { // diagonal bottom
-      qInfo() << "DIAGONAL BOTTOM" << Qt::endl;
       return diagonalPolygon(node, other, -1);
-    } else {
-      qInfo() << "NA DIREITA" << Qt::endl;
-      qInfo() << node << Qt::endl;
+    } else { // same y
       return QPolygon(QRect(node.x(), node.y() - margin, NEIGHBOUR_AREA, RECT_HEIGHT));
     }
-  } else if (node.y() > other.y()) {
-    qInfo() << "EM CIMA" << Qt::endl;
+  } else if (node.y() < other.y()) { // other is above
     return QPolygon(QRect(node.x() - margin, node.y(), RECT_HEIGHT, NEIGHBOUR_AREA));
-  } else {
-    qInfo() << "EMBAIXO" << Qt::endl;
+  } else { // other is bellow
     return QPolygon(QRect(other.x() - margin, other.y(), RECT_HEIGHT, NEIGHBOUR_AREA));
   }
   return polygon;
@@ -83,15 +73,17 @@ QPolygon Graph::createArea(QPoint node, QPoint other) {
 bool Graph::thereIsAnObstacle(QPoint node, QPoint other) {
   QPolygon nodeArea = createArea(node, other);
 
-  qInfo() << "|-> polygon = " << nodeArea << Qt::endl;
-
   for (auto o : obstaclesArea) {
     if (nodeArea.intersects(QPolygon(o))) {
-      qInfo() << node << " e " << other << "!!tem um inimigo" << o.topLeft() << Qt::endl;
-      return false;
+      // qInfo() << node << " e " << other << "!!tem um inimigo" << o.topLeft() << Qt::endl;
+      return true;
     }
   }
-  return true;
+  return false;
+}
+
+bool Graph::isEqual(QPoint node, QPoint other) {
+  return (node.x() == other.x() && node.y() == other.y());
 }
 
 bool Graph::isNeighbour(QPoint node, QPoint other) {
@@ -100,7 +92,7 @@ bool Graph::isNeighbour(QPoint node, QPoint other) {
   int difY = qAbs(node.y() - other.y());
 
   if (node.x() <= other.x() && difX <= NEIGHBOUR_AREA && difY <= NEIGHBOUR_AREA) {
-    if (node == other || thereIsAnObstacle(node, other)) {
+    if (isEqual(node, other) || thereIsAnObstacle(node, other)) {
       return false;
     }
     return true;
@@ -109,13 +101,25 @@ bool Graph::isNeighbour(QPoint node, QPoint other) {
   return false;
 }
 
-void Graph::createEdges() {
+void Graph::printGraph() const {
+  auto node = graph.constBegin();
+  while (node != graph.constEnd()) {
+    qInfo() << node.key() << " -> " << node.value() << Qt::endl;
+    ++node;
+  }
+}
+
+void Graph::createEdges(QPointF target) {
+  QPoint ball(qCeil(target.x()), qCeil(target.y()));
+
   // create links between all nodes that are neighbours
   auto node = graph.constBegin();
   while (node != graph.constEnd()) {
+    if (isNeighbour(node.key(), ball)) {
+      graph[node.key()].append(ball);
+    }
     auto other = graph.constBegin();
     while (other != graph.constEnd()) {
-      // qInfo() << other.key() << " -> " << other.value() << Qt::endl;
       if (isNeighbour(node.key(), other.key())) {
         graph[node.key()].append(other.key());
       }
@@ -123,35 +127,15 @@ void Graph::createEdges() {
     }
     ++node;
   }
-  node = graph.constBegin();
-  while (node != graph.constEnd()) {
-    qInfo() << node.key() << " -> " << node.value() << Qt::endl;
-    ++node;
-  }
 }
-
-// bool isGreater(QHash<QPoint, QList<QPoint>>::iterator node,
-//                QHash<QPoint, QList<QPoint>>::iterator other) {
-//   if (node.key().x() > other.key().x() && node.key().y() < other.key().y()) {
-//     return true;
-//   } else if (node.key().x() == other.key().x()) {
-//     return (node.key().y() < other.key().y());
-//   } else if (node.key().y() == other.key().y()) {
-//     return node.key().x() > other.key().x();
-//   }
-//   return false;
-// }
 
 void Graph::createGraph(const QPointF& origin, const QPointF& target) {
 
   createNodes(origin, target);
 
-  createEdges();
+  createEdges(target);
 
-  qInfo() << "robot position:" << origin << Qt::endl;
-  qInfo() << "target position:" << target << Qt::endl;
-
-  qInfo() << "graph:" << graph << Qt::endl;
+  // printGraph();
 }
 
 std::vector<int> Graph::defineBoundaries(const QPointF& point) const {
@@ -168,7 +152,6 @@ std::vector<int> Graph::defineBoundaries(const QPointF& point) const {
 QList<QPointF> Graph::generateBestPath(const Robots<Robot>& enemies,
                                        const QPointF& origin,
                                        const QPointF& target) {
-  qInfo() << "enemies:" << enemies << Qt::endl;
   QList<QPointF> list;
   mapObstacles(enemies);
   createGraph(origin, target);
