@@ -1,6 +1,8 @@
 #include "Graph.h"
 
-Graph::Graph() = default;
+Graph::Graph() {
+  initial = QPair<QPoint, double>(QPoint(0, 0), INF);
+}
 
 void Graph::mapObstacles(const Robots<Robot>& enemies) {
   this->obstaclesArea = QList<QRect>();
@@ -28,7 +30,7 @@ void Graph::createNodes(const QPointF& origin, const QPointF& target) {
     for (int iy = -Y_MAX; iy <= Y_MAX; iy += Y_MAX / 2) {
       node.ry() = iy;
       if (!obstacles.contains(node)) {
-        graph[node] = QList<QPoint>();
+        graph[node] = QHash<QPoint, double>();
       }
     }
     ix += interval;
@@ -109,19 +111,29 @@ void Graph::printGraph() const {
   }
 }
 
+void Graph::setInitial(QPoint node) {
+  if (isNeighbour(robot, node)) {
+    double dist = distance(node, robot);
+    if (dist < initial.second) {
+      initial.first = node;
+      initial.second = dist;
+    }
+  }
+}
+
 void Graph::createEdges(QPointF target) {
-  QPoint ball(qCeil(target.x()), qCeil(target.y()));
 
   // create links between all nodes that are neighbours
   auto node = graph.constBegin();
   while (node != graph.constEnd()) {
     if (isNeighbour(node.key(), ball)) {
-      graph[node.key()].append(ball);
+      graph[node.key()][ball] = distance(node.key(), ball);
     }
+    setInitial(node.key());
     auto other = graph.constBegin();
     while (other != graph.constEnd()) {
       if (isNeighbour(node.key(), other.key())) {
-        graph[node.key()].append(other.key());
+        graph[node.key()][other.key()] = distance(node.key(), other.key());
       }
       ++other;
     }
@@ -135,7 +147,7 @@ void Graph::createGraph(const QPointF& origin, const QPointF& target) {
 
   createEdges(target);
 
-  // printGraph();
+  printGraph();
 }
 
 std::vector<int> Graph::defineBoundaries(const QPointF& point) const {
@@ -149,11 +161,17 @@ std::vector<int> Graph::defineBoundaries(const QPointF& point) const {
   return v;
 }
 
-QList<QPointF> Graph::generateBestPath(const Robots<Robot>& enemies,
-                                       const QPointF& origin,
-                                       const QPointF& target) {
-  QList<QPointF> list;
+QList<QPoint> Graph::generateBestPath(const Robots<Robot>& enemies,
+                                      const QPointF& origin,
+                                      const QPointF& target) {
+  robot = QPoint(qCeil(origin.x()), qCeil(origin.y()));
+  ball = QPoint(qCeil(target.x()), qCeil(target.y()));
   mapObstacles(enemies);
   createGraph(origin, target);
+  Dijkstra dijkstra(initial.first, graph, ball);
+
+  QList<QPoint> list;
+  list = dijkstra.bestPath();
+
   return list;
 }
