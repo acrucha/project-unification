@@ -20,7 +20,7 @@ class Graph {
   QPolygon createArea(QPoint node, QPoint other);
   bool thereIsAnObstacle(QPoint node, QPoint other);
   bool static isEqual(QPoint node, QPoint other);
-  void createEdges(QPointF target);
+  void createEdges();
   void createGraph(const QPointF& origin, const QPointF& target);
   void printGraph() const;
   void setInitial(QPoint node);

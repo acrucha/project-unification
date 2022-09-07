@@ -9,7 +9,9 @@ void Graph::mapObstacles(const Robots<Robot>& enemies) {
   for (auto& e : enemies) {
     QPointF p = e.position();
     std::vector<int> v = defineBoundaries(p);
-    QRect area(v[0], v[1], OBSTACLE_BOUNDARIES * 2, OBSTACLE_BOUNDARIES * 2);
+    // QRect area(QPoint(v[0], v[1]), QSize(OBSTACLE_BOUNDARIES * 2, OBSTACLE_BOUNDARIES * 2));
+    QRect area(QPoint(v[0], v[1]), QPoint(v[2], v[3]));
+    qInfo() << p << " - Area: " << area;
     this->obstaclesArea.append(area);
     for (int i = v[0]; i < v[2]; i++) {
       for (int j = v[1]; j > v[3]; j--) {
@@ -75,6 +77,9 @@ QPolygon Graph::createArea(QPoint node, QPoint other) {
 bool Graph::thereIsAnObstacle(QPoint node, QPoint other) {
   QPolygon nodeArea = createArea(node, other);
 
+  // qInfo() << node << " e " << other;
+  // qInfo() << "polygon = " << nodeArea;
+
   for (auto o : obstaclesArea) {
     if (nodeArea.intersects(QPolygon(o))) {
       // qInfo() << node << " e " << other << "!!tem um inimigo" << o.topLeft() << Qt::endl;
@@ -121,7 +126,7 @@ void Graph::setInitial(QPoint node) {
   }
 }
 
-void Graph::createEdges(QPointF target) {
+void Graph::createEdges() {
 
   // create links between all nodes that are neighbours
   auto node = graph.constBegin();
@@ -129,7 +134,7 @@ void Graph::createEdges(QPointF target) {
     if (isNeighbour(node.key(), ball)) {
       graph[node.key()][ball] = distance(node.key(), ball);
     }
-    setInitial(node.key());
+    setInitial(node.key()); // ver isso
     auto other = graph.constBegin();
     while (other != graph.constEnd()) {
       if (isNeighbour(node.key(), other.key())) {
@@ -145,7 +150,7 @@ void Graph::createGraph(const QPointF& origin, const QPointF& target) {
 
   createNodes(origin, target);
 
-  createEdges(target);
+  createEdges();
 
   printGraph();
 }
