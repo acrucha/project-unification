@@ -34,6 +34,7 @@ QList<QPoint> Dijkstra::generatePath() {
 
   while (p != initial) {
     path.append(p);
+    // qInfo() << p;
     p = pred[p];
   }
 
@@ -44,28 +45,38 @@ QList<QPoint> Dijkstra::generatePath() {
   return path;
 }
 
+pair<int, int> toPair(QPoint p) {
+  return pair<int, int>(p.x(), p.y());
+}
+
+QPoint toPoint(pair<int, int> p) {
+  return QPoint(p.first, p.second);
+}
+
 QList<QPoint> Dijkstra::bestPath() {
   QList<QPoint> path;
 
   priority_queue<nodePair, vector<nodePair>, greater<nodePair>> pq;
 
+  auto init = toPair(initial);
   distances[initial] = 0;
-  pq.push({distances[initial], initial});
+  pq.push({distances[initial], init});
 
   while (!pq.empty()) {
     auto [dist, node] = pq.top();
     pq.pop(); // tirando da fila
-
-    if (dist != distances[node])
+    auto nodePoint = toPoint(node);
+    if (dist != distances[nodePoint])
       continue;
-
-    auto n = graph[node].constBegin();
-    while (n != graph[node].constEnd()) {
-      auto newDist = dist + n.value();
+    // qInfo() << "nodePoint -> " << nodePoint << "/ ns:";
+    auto n = graph[nodePoint].constBegin();
+    while (n != graph[nodePoint].constEnd()) {
+      double newDist = dist + n.value();
       if (!distances.contains(n.key()) || distances[n.key()] > newDist) {
         distances[n.key()] = newDist;
-        pq.push({newDist, n.key()});
-        pred[n.key()] = node;
+        pq.push({newDist, toPair(n.key())});
+        pred[n.key()] = nodePoint;
+        // qInfo() << "n -> " << n.key();
       }
       ++n;
     }

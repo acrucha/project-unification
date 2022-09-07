@@ -47,7 +47,9 @@ void CustomPlayer::exec() {
     QList<QPoint> q =
         g.generateBestPath(frame->enemies(), robot->position(), frame->ball().position());
 
-    qInfo() << q;
+    qInfo() << robot->position() << " to " << frame->ball().position();
+    qInfo() << frame->enemies();
+    qInfo() << "MELHOR CAMINHO: " << q;
 
     this->map = true;
   }

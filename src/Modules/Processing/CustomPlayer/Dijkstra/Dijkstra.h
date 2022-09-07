@@ -1,5 +1,5 @@
-#ifndef PROJECT_UNIFICATION_DIJKTRA_H
-#define PROJECT_UNIFICATION_DIJKTRA_H
+#ifndef PROJECT_UNIFICATION_DIJKSTRA_H
+#define PROJECT_UNIFICATION_DIJKSTRA_H
 
 #include "Modules/Processing/ProcessingUtils/ProcessingUtils.h"
 
@@ -19,4 +19,4 @@ class Dijkstra {
   QList<QPoint> bestPath();
 };
 
-#endif // PROJECT_UNIFICATION_DIJKTRA_H
+#endif // PROJECT_UNIFICATION_DIJKSTRA_H
