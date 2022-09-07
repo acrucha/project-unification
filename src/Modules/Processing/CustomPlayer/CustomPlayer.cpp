@@ -44,8 +44,11 @@ void CustomPlayer::exec() {
   if (!this->map) {
     Graph g = Graph();
 
-    QList<QPointF> q =
+    QList<QPoint> q =
         g.generateBestPath(frame->enemies(), robot->position(), frame->ball().position());
+
+    qInfo() << q;
+
     this->map = true;
   }
 
