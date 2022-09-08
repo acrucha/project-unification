@@ -23,6 +23,7 @@ void CustomPlayer::connectModules(const Modules* modules) {
 
 void CustomPlayer::init(const Modules* modules) {
   this->map = false;
+  this->stopRobot = false;
 }
 
 void CustomPlayer::update() {
@@ -40,18 +41,36 @@ void CustomPlayer::exec() {
     return;
   }
 
-  // qInfo() << "to pegando ein!" << Qt::endl;
   if (!this->map) {
     Graph g = Graph();
 
-    QList<QPoint> q =
-        g.generateBestPath(frame->enemies(), robot->position(), frame->ball().position());
+    path = g.generateBestPath(frame->enemies(), robot->position(), frame->ball().position());
 
-    qInfo() << robot->position() << " to " << frame->ball().position();
-    qInfo() << frame->enemies();
-    qInfo() << "MELHOR CAMINHO: " << q;
+    qInfo() << "MELHOR CAMINHO: " << path;
+
+    currentPoint = path.first();
+    path.removeFirst();
 
     this->map = true;
+  }
+  if (!path.isEmpty() && this->stopRobot == false) {
+    VSSMotion::GoToPoint goToPoint(currentPoint);
+    currentPoint = path.first();
+    QPointF p = robot->position();
+    QRectF area(QPointF(p.x() - BOUND, p.y() + BOUND), QPointF(p.x() + BOUND, p.y() - BOUND));
+    if (area.contains(currentPoint)) {
+      path.removeFirst();
+    }
+    auto command = vssNavigation.run(robot.value(), VSSRobotCommand(goToPoint));
+    emit sendCommand(command);
+  } else {
+    this->stopRobot = true;
+  }
+
+  if (this->stopRobot) {
+    VSSMotion::Stop stop;
+    auto command = vssNavigation.run(robot.value(), VSSRobotCommand(stop));
+    emit sendCommand(command);
   }
 
   // TODO: here...

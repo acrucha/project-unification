@@ -9,7 +9,6 @@ void Graph::mapObstacles(const Robots<Robot>& enemies) {
   for (auto& e : enemies) {
     QPointF p = e.position();
     std::vector<int> v = defineBoundaries(p);
-    // QRect area(QPoint(v[0], v[1]), QSize(OBSTACLE_BOUNDARIES * 2, OBSTACLE_BOUNDARIES * 2));
     QRect area(QPoint(v[0], v[1]), QPoint(v[2], v[3]));
     qInfo() << p << " - Area: " << area;
     this->obstaclesArea.append(area);
@@ -152,7 +151,7 @@ void Graph::createGraph(const QPointF& origin, const QPointF& target) {
 
   createEdges();
 
-  printGraph();
+  // printGraph();
 }
 
 std::vector<int> Graph::defineBoundaries(const QPointF& point) const {

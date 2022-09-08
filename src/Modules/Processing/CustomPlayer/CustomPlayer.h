@@ -32,6 +32,10 @@ class CustomPlayer : public Processing {
   std::optional<Robot> robot;
 
   bool map;
+  bool stopRobot;
+  QList<QPoint> path;
+  QPoint currentPoint;
+  const int BOUND = 10;
 
   SSLNavigation sslNavigation;
   VSSNavigation vssNavigation;
