@@ -25,7 +25,7 @@ void Graph::createNodes(const QPointF& origin, const QPointF& target) {
   int difX = qCeil(qFabs(origin.x() - target.x())) - TARGET_MARGIN;
 
   QPoint node(qCeil(origin.x()), qCeil(origin.y()));
-  int ix = node.x();
+  int ix = qFloor(qMin(origin.x(), target.x()));
   int interval = difX / (INTERVAL_NUMBER - 1);
   while (difX > 0 && ix <= X_MAX) {
     for (int iy = -Y_MAX; iy <= Y_MAX; iy += Y_MAX / 2) {
@@ -97,7 +97,7 @@ bool Graph::isNeighbour(QPoint node, QPoint other) {
   int difX = qAbs(node.x() - other.x());
   int difY = qAbs(node.y() - other.y());
 
-  if (node.x() <= other.x() && difX <= NEIGHBOUR_AREA && difY <= NEIGHBOUR_AREA) {
+  if (difX <= NEIGHBOUR_AREA && difY <= NEIGHBOUR_AREA) {
     if (isEqual(node, other) || thereIsAnObstacle(node, other)) {
       return false;
     }

@@ -35,8 +35,8 @@ class Graph {
   const int OBSTACLE_BOUNDARIES = 4;
   const int NEIGHBOUR_AREA = 33;
   const int RECT_HEIGHT = 4;
-  const int X_MAX = 70;
-  const int Y_MAX = 60;
+  const int X_MAX = 80;
+  const int Y_MAX = 65;
   const int INTERVAL_NUMBER = 4;
   const int TARGET_MARGIN = 5;
   const int INF = 1000;
