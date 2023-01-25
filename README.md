@@ -90,7 +90,7 @@ Qualquer outro sistema operacional pode requerer scripts de instalação diferen
 ## Download do repositório
 Este repositório possui depedências de outros repositórios, para fazer o download, o clone, do código corretamente e conseguir instalar utilise o seguinte comando:
 ``` bash
-git clone --recurse-submodules -j4 https://github.com/robocin/project-unification.git
+git clone --recurse-submodules -j4 https://github.com/acrucha/project-unification.git
 ```
 ## Setup
 

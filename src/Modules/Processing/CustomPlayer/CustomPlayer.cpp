@@ -1,4 +1,5 @@
 #include "CustomPlayer.h"
+#include "Graph/Graph.h"
 
 CustomPlayer::CustomPlayer(int index, QThreadPool* threadPool) : Processing(index, threadPool) {
 }
@@ -21,6 +22,8 @@ void CustomPlayer::connectModules(const Modules* modules) {
 }
 
 void CustomPlayer::init(const Modules* modules) {
+  this->map = false;
+  this->stopRobot = false;
 }
 
 void CustomPlayer::update() {
@@ -36,6 +39,38 @@ void CustomPlayer::update() {
 void CustomPlayer::exec() {
   if (!field || !frame || !robot) {
     return;
+  }
+
+  if (!this->map) {
+    Graph g = Graph();
+
+    path = g.generateBestPath(frame->enemies(), robot->position(), frame->ball().position());
+
+    qInfo() << "MELHOR CAMINHO: " << path;
+
+    currentPoint = path.first();
+    path.removeFirst();
+
+    this->map = true;
+  }
+  if (!path.isEmpty() && this->stopRobot == false) {
+    VSSMotion::GoToPoint goToPoint(currentPoint);
+    currentPoint = path.first();
+    QPointF p = robot->position();
+    QRectF area(QPointF(p.x() - BOUND, p.y() + BOUND), QPointF(p.x() + BOUND, p.y() - BOUND));
+    if (area.contains(currentPoint)) {
+      path.removeFirst();
+    }
+    auto command = vssNavigation.run(robot.value(), VSSRobotCommand(goToPoint));
+    emit sendCommand(command);
+  } else {
+    this->stopRobot = true;
+  }
+
+  if (this->stopRobot) {
+    VSSMotion::Stop stop;
+    auto command = vssNavigation.run(robot.value(), VSSRobotCommand(stop));
+    emit sendCommand(command);
   }
 
   // TODO: here...

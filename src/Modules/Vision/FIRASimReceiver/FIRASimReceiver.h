@@ -26,7 +26,7 @@ class FIRASimReceiver : public Vision {
  private:
   struct Args {
     Parameters::Arg<QString> ip = "224.5.23.2";
-    Parameters::Arg<int> port = 10020;
+    Parameters::Arg<int> port = 10002;
     Parameters::Arg<QString> inet = QNetworkInterface::allInterfaces().front().name();
     Parameters::Arg<bool> isYellow = true;
     Parameters::Arg<bool> isAttackingToRight = true;
